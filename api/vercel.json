@@ -11,25 +11,5 @@
       "src": "/api/(.*)",
       "dest": "/api/$1"
     }
-  ],
-  "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "MONGODB_DB_NAME": "@mongodb-db-name",
-    "JWT_SECRET": "@jwt-secret",
-    "TWILIO_ACCOUNT_SID": "@twilio-account-sid",
-    "TWILIO_AUTH_TOKEN": "@twilio-auth-token",
-    "TWILIO_VERIFY_SERVICE_SID": "@twilio-verify-service-sid",
-    "TWILIO_PHONE_NUMBER": "@twilio-phone-number",
-    "CLOUDINARY_CLOUD_NAME": "@cloudinary-cloud-name",
-    "CLOUDINARY_API_KEY": "@cloudinary-api-key",
-    "CLOUDINARY_API_SECRET": "@cloudinary-api-secret",
-    "APP_URL": "@app-url",
-    "RECAPTCHA_SECRET_KEY": "@recaptcha-secret-key",
-    "SMTP_HOST": "@smtp-host",
-    "SMTP_PORT": "@smtp-port",
-    "SMTP_USER": "@smtp-user",
-    "SMTP_PASS": "@smtp-pass",
-    "SMTP_FROM": "@smtp-from",
-    "FEEDBACK_EMAIL_TO": "@feedback-email-to"
-  }
+  ]
 }
