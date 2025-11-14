@@ -35,28 +35,30 @@ Required for different device sizes:
 
 ### Description
 ```
-Watcha Bringin makes planning potluck gatherings with friends easy and fun! 
+Whatcha Bringin keeps potluck planning stress-free, from the first invite to the final dish. Host a gathering in seconds, text your friends the link, and watch every slot fill without endless group chats.
 
-🎉 KEY FEATURES:
-• Easy phone number authentication - no complicated sign-ups
-• Send invites via text message - reach your friends instantly
-• Coordinate who's bringing what - see all items at a glance
-• Claim items and add custom descriptions - "I'm bringing my famous mac and cheese!"
-• Create custom gatherings with names, images, dates, and locations
-• Simple, whimsical design that makes planning fun
+✨ HIGHLIGHTS
+• Phone-number sign-in—no passwords to remember
+• One-tap text invites with smart deep links
+• Live roster of dishes, drinks, and supplies so nothing gets duplicated
+• Claim or add custom items with personal notes (“Grandma’s peach cobbler!”)
+• Custom gatherings with names, cover images, dates, locations, and reminders
+• Works on iPhone and the web at whatchabringin.com
 
-Perfect for:
-• Potluck dinners
-• BBQ parties
-• Holiday gatherings
-• Birthday parties
-• Any group food event!
+🎉 PERFECT FOR
+• Potlucks, BBQs, and tailgates
+• Friendsgiving and holiday dinners
+• Birthday parties and showers
+• Neighborhood or office events
 
-Never have duplicate dishes again. Never wonder who's bringing what. Just good food and great times with Watcha Bringin!
+Plan together, eat better, and share the workload—Whatcha Bringin makes every guest part of the fun.
 ```
 
+### Promotional Text
+Plan potlucks in seconds—invite friends, assign dishes, and see every contribution at whatchabringin.com so nothing gets duplicated.
+
 ### Keywords
-potluck, gathering, party planning, food coordination, event planning, friends, social, bbq, dinner party, group events
+potluck, gathering, party planning, coordination, event planning, friends, social, bbq, dinner party
 
 ### Support URL
 https://whatcha-bringin.app/support

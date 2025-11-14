@@ -63,8 +63,11 @@ EXPO_PUBLIC_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
 Create a `.env.local` file in the `website/` directory:
 
 ```env
-# API URL (for fetching invite data)
+# API URL (for fetching invite data & submitting support forms)
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
+# reCAPTCHA v3 site key (optional in dev, recommended in prod)
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
 
 # For production, use your deployed API URL
 # NEXT_PUBLIC_API_URL=https://api.whatcha-bringin.app/api

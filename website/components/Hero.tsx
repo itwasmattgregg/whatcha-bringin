@@ -59,12 +59,26 @@ export default function Hero() {
           </div>
         )}
 
-        <div className="mt-8">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 text-gray-600 text-base">
+          <a
+            href="/support"
+            className="hover:text-gray-800 font-medium"
+          >
+            🙋 Need Help?
+          </a>
+          <span className="hidden sm:inline text-gray-300">•</span>
           <a
             href="/donate"
-            className="text-gray-600 hover:text-gray-800 font-medium"
+            className="hover:text-gray-800 font-medium"
           >
             ☕ Support the developer
+          </a>
+          <span className="hidden sm:inline text-gray-300">•</span>
+          <a
+            href="/privacy"
+            className="hover:text-gray-800 font-medium"
+          >
+            Privacy Policy
           </a>
         </div>
       </div>

@@ -1,7 +1,10 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { META_DESCRIPTION, buildCanonicalUrl } from '../lib/seo';
 
 export default function Donate() {
+  const canonicalUrl = buildCanonicalUrl('/donate');
+
   return (
     <>
       <Head>
@@ -10,8 +13,12 @@ export default function Donate() {
           name='description'
           content='Support the development of Watcha Bringin by buying the developer a coffee!'
         />
-        <meta name='viewport' content='width=device-width, initial-scale=1' />
-        <link rel='icon' href='/favicon.ico' />
+        <meta
+          property='og:title'
+          content='Support Watcha Bringin - Buy Me a Coffee'
+        />
+        <meta property='og:description' content={META_DESCRIPTION} />
+        <link rel='canonical' href={canonicalUrl} />
       </Head>
       <main className='min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center p-8'>
         <div className='max-w-2xl w-full text-center'>

@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /
+
+# Explicitly prevent indexing of the API project
+User-agent: GPTBot
+Disallow: /
+

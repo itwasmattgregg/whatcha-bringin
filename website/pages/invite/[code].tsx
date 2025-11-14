@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { buildCanonicalUrl, getAbsoluteSocialImage, SITE_NAME } from '../../lib/seo';
 
 interface Gathering {
   _id: string;
@@ -88,11 +89,15 @@ export default function InvitePage() {
     }
   };
 
+  const canonicalUrl = buildCanonicalUrl(router.asPath?.split('?')[0] || '/invite');
+  const socialImage = getAbsoluteSocialImage();
+
   if (loading) {
     return (
       <>
         <Head>
           <title>Loading Invite - Watcha Bringin</title>
+          <link rel="canonical" href={canonicalUrl} />
         </Head>
         <main className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
           <div className="text-center">
@@ -109,6 +114,8 @@ export default function InvitePage() {
       <>
         <Head>
           <title>Invite Not Found - Watcha Bringin</title>
+          <meta name="robots" content="noindex, follow" />
+          <link rel="canonical" href={canonicalUrl} />
         </Head>
         <main className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center px-4">
           <div className="text-center max-w-md">
@@ -137,6 +144,20 @@ export default function InvitePage() {
           name="description"
           content={`You're invited to ${gathering.name} on ${formatDate(gathering.date)} at ${gathering.time}. Join us in Watcha Bringin!`}
         />
+        <meta property="og:title" content={`You're Invited to ${gathering.name} - ${SITE_NAME}`} />
+        <meta
+          property="og:description"
+          content={`Join the ${gathering.name} gathering on Watcha Bringin. View the invite for details and download the app to RSVP.`}
+        />
+        <meta property="og:image" content={socialImage} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={`You're Invited to ${gathering.name} - ${SITE_NAME}`} />
+        <meta
+          name="twitter:description"
+          content={`Join ${gathering.name} on Watcha Bringin to see what everyone is bringing.`}
+        />
+        <meta name="twitter:image" content={socialImage} />
+        <link rel="canonical" href={canonicalUrl} />
       </Head>
       <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
