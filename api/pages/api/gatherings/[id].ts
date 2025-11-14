@@ -25,9 +25,11 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
     const db = await getDb();
     const gatheringId = new ObjectId(id);
+    const gatherings = db.collection(GatheringCollection);
+    const gatheringFilter = { _id: gatheringId, deletedAt: { $exists: false } };
     
     if (req.method === 'GET') {
-      const gathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+      const gathering = await gatherings.findOne(gatheringFilter);
       
       if (!gathering) {
         return res.status(404).json({ error: 'Gathering not found' });
@@ -37,7 +39,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
     
     if (req.method === 'PUT') {
-      const gathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+      const gathering = await gatherings.findOne(gatheringFilter);
       
       if (!gathering) {
         return res.status(404).json({ error: 'Gathering not found' });
@@ -78,17 +80,14 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         updateData.coverImage = imageUrl;
       }
       
-      await db.collection(GatheringCollection).updateOne(
-        { _id: gatheringId },
-        { $set: updateData }
-      );
+      await gatherings.updateOne(gatheringFilter, { $set: updateData });
       
-      const updatedGathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+      const updatedGathering = await gatherings.findOne(gatheringFilter);
       return res.status(200).json(updatedGathering);
     }
     
     if (req.method === 'DELETE') {
-      const gathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+      const gathering = await gatherings.findOne(gatheringFilter);
       
       if (!gathering) {
         return res.status(404).json({ error: 'Gathering not found' });
@@ -97,8 +96,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       if (gathering.hostId.toString() !== req.userId) {
         return res.status(403).json({ error: 'Only the host can delete this gathering' });
       }
-      
-      await db.collection(GatheringCollection).deleteOne({ _id: gatheringId });
+      await gatherings.updateOne(gatheringFilter, {
+        $set: {
+          deletedAt: new Date(),
+          updatedAt: new Date(),
+        },
+      });
       return res.status(200).json({ success: true });
     }
     

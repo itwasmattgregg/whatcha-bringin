@@ -95,6 +95,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
         const pastGatherings = await gatheringsCollection
           .find({
+            deletedAt: { $exists: false },
             date: { $lt: todayIso },
             $or: pastOrFilters,
           })
@@ -108,6 +109,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
       const createdGatherings = await gatheringsCollection
         .find({
+          deletedAt: { $exists: false },
           hostId: userObjectId,
           date: { $gte: todayIso },
         })
@@ -118,6 +120,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
         joinedGatheringIds.length > 0
           ? await gatheringsCollection
               .find({
+                deletedAt: { $exists: false },
                 _id: { $in: joinedGatheringIds },
                 hostId: { $ne: userObjectId },
                 date: { $gte: todayIso },

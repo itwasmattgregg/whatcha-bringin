@@ -21,6 +21,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ItemCard from '../components/ItemCard';
 import { AnimatedBackground } from '../components/AnimatedBackgrounds';
+import type { AxiosError } from 'axios';
 
 export default function GatheringDetailScreen() {
   const route = useRoute();
@@ -50,7 +51,11 @@ export default function GatheringDetailScreen() {
     });
   }, []);
 
-  const { data: gathering, isLoading: gatheringLoading } = useQuery({
+  const {
+    data: gathering,
+    isLoading: gatheringLoading,
+    error: gatheringError,
+  } = useQuery({
     queryKey: ['gathering', gatheringId],
     queryFn: () => gatheringsService.getGathering(gatheringId),
   });
@@ -58,6 +63,7 @@ export default function GatheringDetailScreen() {
   const { data: items, isLoading: itemsLoading } = useQuery({
     queryKey: ['items', gatheringId],
     queryFn: () => gatheringsService.getItems(gatheringId),
+    enabled: Boolean(gatheringId) && !gatheringError,
   });
 
   const addItemMutation = useMutation({
@@ -174,10 +180,23 @@ export default function GatheringDetailScreen() {
     );
   }
 
-  if (!gathering) {
+  const isGatheringNotFound =
+    (gatheringError as AxiosError)?.response?.status === 404;
+
+  if (gatheringError || !gathering) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Gathering not found</Text>
+        <Text style={styles.loadingText}>
+          {isGatheringNotFound
+            ? 'This gathering is no longer available.'
+            : 'Failed to load gathering.'}
+        </Text>
+        <TouchableOpacity
+          style={styles.inviteButton}
+          onPress={() => (navigation as any).goBack?.()}
+        >
+          <Text style={styles.inviteButtonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -375,21 +394,31 @@ export default function GatheringDetailScreen() {
                   style={[styles.drawerButton, styles.copyButton]}
                   onPress={handleCopyMessage}
                 >
-                  <Text style={styles.copyButtonText}>📋 Copy</Text>
+                  <Text
+                    style={[styles.drawerButtonText, styles.copyButtonText]}
+                  >
+                    Copy Link
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.drawerButton, styles.shareButton]}
                   onPress={handleShare}
                 >
-                  <Text style={styles.shareButtonText}>📤 Share</Text>
+                  <Text
+                    style={[styles.drawerButtonText, styles.shareButtonText]}
+                  >
+                    Share Invite
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.drawerButton, styles.smsButton]}
                   onPress={handleSendSMS}
                 >
-                  <Text style={styles.smsButtonText}>💬 Send SMS</Text>
+                  <Text style={[styles.drawerButtonText, styles.smsButtonText]}>
+                    Send SMS
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -687,33 +716,45 @@ const styles = StyleSheet.create({
   },
   drawerButton: {
     flex: 1,
-    padding: 14,
-    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   copyButton: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
+  },
+  drawerButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
   copyButtonText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#222',
   },
   shareButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#f0f6ff',
+    borderColor: '#c2dbff',
   },
   shareButtonText: {
-    color: '#1976d2',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#1259c3',
   },
   smsButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#1b5e20',
+    borderColor: '#1b5e20',
+    shadowColor: '#1b5e20',
   },
   smsButtonText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
   },
   closeButton: {
     padding: 12,

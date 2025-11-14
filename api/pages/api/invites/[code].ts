@@ -2,10 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '../../../lib/db';
 import { GatheringCollection } from '../../../models/Gathering';
 import { InviteCollection } from '../../../models/Invite';
-import { ObjectId } from 'mongodb';
 import { hashInviteCode } from '../../../lib/inviteCodes';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Enable CORS for public invite endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -46,15 +48,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Backfill hashed code for legacy records
     if (invite.code && !invite.hashedCode) {
       invite.hashedCode = hashInviteCode(invite.code);
-      await db.collection(InviteCollection).updateOne(
-        { _id: invite._id },
-        { $set: { hashedCode: invite.hashedCode } }
-      );
+      await db
+        .collection(InviteCollection)
+        .updateOne(
+          { _id: invite._id },
+          { $set: { hashedCode: invite.hashedCode } }
+        );
     }
 
     // Get gathering details
     const gathering = await db.collection(GatheringCollection).findOne({
       _id: invite.gatheringId,
+      deletedAt: { $exists: false },
     });
 
     if (!gathering) {
@@ -81,4 +86,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Failed to fetch invite' });
   }
 }
-

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '../../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../../lib/middleware';
 import { ItemCollection } from '../../../../models/Item';
+import { GatheringCollection } from '../../../../models/Gathering';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
 
@@ -26,6 +27,15 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
+    }
+    
+    const gathering = await db.collection(GatheringCollection).findOne({
+      _id: item.gatheringId,
+      deletedAt: { $exists: false },
+    });
+    
+    if (!gathering) {
+      return res.status(404).json({ error: 'Gathering not found' });
     }
     
     // If already claimed by this user, unclaim it

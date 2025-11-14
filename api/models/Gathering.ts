@@ -12,6 +12,7 @@ export interface Gathering {
   hostId: ObjectId;
   createdAt: Date;
   updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export const GatheringCollection = 'gatherings';

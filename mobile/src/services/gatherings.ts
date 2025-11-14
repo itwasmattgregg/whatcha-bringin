@@ -92,6 +92,15 @@ export const gatheringsService = {
     return response.data;
   },
 
+  deleteItem: async (
+    gatheringId: string,
+    itemId: string
+  ): Promise<void> => {
+    await apiClient.delete(`/gatherings/${gatheringId}/items`, {
+      data: { itemId },
+    });
+  },
+
   getInviteShare: async (
     gatheringId: string
   ): Promise<{ code: string; link: string; message: string }> => {

@@ -21,9 +21,10 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
     const db = await getDb();
     const gatheringId = new ObjectId(id);
+    const gatheringFilter = { _id: gatheringId, deletedAt: { $exists: false } };
     
     // Verify gathering exists
-    const gathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+    const gathering = await db.collection(GatheringCollection).findOne(gatheringFilter);
     if (!gathering) {
       return res.status(404).json({ error: 'Gathering not found' });
     }
@@ -51,6 +52,37 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       const createdItem = await db.collection(ItemCollection).findOne({ _id: result.insertedId });
       
       return res.status(201).json(createdItem);
+    }
+
+    if (req.method === 'DELETE') {
+      const itemId =
+        typeof req.query.itemId === 'string'
+          ? req.query.itemId
+          : typeof req.body?.itemId === 'string'
+          ? req.body.itemId
+          : null;
+
+      if (!itemId) {
+        return res.status(400).json({ error: 'Item ID is required' });
+      }
+
+      if (gathering.hostId.toString() !== req.userId) {
+        return res
+          .status(403)
+          .json({ error: 'Only the host can delete items' });
+      }
+
+      const itemObjectId = new ObjectId(itemId);
+      const deleted = await db.collection(ItemCollection).deleteOne({
+        _id: itemObjectId,
+        gatheringId,
+      });
+
+      if (!deleted.deletedCount) {
+        return res.status(404).json({ error: 'Item not found' });
+      }
+
+      return res.status(200).json({ success: true });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import { getDb } from '../../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../../lib/middleware';
 import { GatheringCollection } from '../../../../models/Gathering';
@@ -30,6 +30,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     // Check if gathering exists
     const gathering = await db.collection(GatheringCollection).findOne({
       _id: invite.gatheringId,
+      deletedAt: { $exists: false },
     });
 
     if (!gathering) {

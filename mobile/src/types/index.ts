@@ -17,6 +17,7 @@ export interface Gathering {
   hostId: string;
   createdAt: string;
   updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface Item {

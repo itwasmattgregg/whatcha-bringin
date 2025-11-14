@@ -39,9 +39,12 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   try {
     const db = await getDb();
     const gatheringId = new ObjectId(id);
+    const gatheringFilter = { _id: gatheringId, deletedAt: { $exists: false } };
 
     // Verify gathering exists and user is host
-    const gathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+    const gathering = await db
+      .collection(GatheringCollection)
+      .findOne(gatheringFilter);
 
     if (!gathering) {
       return res.status(404).json({ error: 'Gathering not found' });
@@ -72,9 +75,13 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     }
 
     // Update gathering
-    await db.collection(GatheringCollection).updateOne({ _id: gatheringId }, { $set: updates });
+    await db
+      .collection(GatheringCollection)
+      .updateOne(gatheringFilter, { $set: updates });
 
-    const updatedGathering = await db.collection(GatheringCollection).findOne({ _id: gatheringId });
+    const updatedGathering = await db
+      .collection(GatheringCollection)
+      .findOne(gatheringFilter);
 
     return res.status(200).json(updatedGathering);
   } catch (error) {

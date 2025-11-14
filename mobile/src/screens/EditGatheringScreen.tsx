@@ -14,7 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { gatheringsService } from '../services/gatherings';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  CommonActions,
+} from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import {
@@ -22,6 +26,7 @@ import {
   AnimatedBackgroundType,
   AnimatedBackground,
 } from '../components/AnimatedBackgrounds';
+import type { AxiosError } from 'axios';
 
 const formatBackgroundLabel = (value?: AnimatedBackgroundType) => {
   if (!value) return 'None';
@@ -50,7 +55,11 @@ export default function EditGatheringScreen() {
   >(undefined);
   const [showBackgroundPicker, setShowBackgroundPicker] = useState(false);
 
-  const { data: gathering, isLoading } = useQuery({
+  const {
+    data: gathering,
+    isLoading,
+    error: gatheringError,
+  } = useQuery({
     queryKey: ['gathering', gatheringId],
     queryFn: () => gatheringsService.getGathering(gatheringId),
     enabled: !!gatheringId,
@@ -92,6 +101,26 @@ export default function EditGatheringScreen() {
       Alert.alert(
         'Error',
         error.response?.data?.error || 'Failed to update gathering'
+      );
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => gatheringsService.deleteGathering(gatheringId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gatherings'] });
+      queryClient.invalidateQueries({ queryKey: ['gathering', gatheringId] });
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        })
+      );
+    },
+    onError: (error: any) => {
+      Alert.alert(
+        'Error',
+        error.response?.data?.error || 'Failed to delete gathering'
       );
     },
   });
@@ -183,10 +212,50 @@ export default function EditGatheringScreen() {
     updateMutation.mutate(updateData);
   };
 
+  const handleDelete = () => {
+    if (deleteMutation.isPending) {
+      return;
+    }
+
+    Alert.alert(
+      'Delete gathering?',
+      'Once deleted, no one will be able to access this gathering again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteMutation.mutate(),
+        },
+      ]
+    );
+  };
+
   if (isLoading) {
     return (
       <View style={styles.container}>
         <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  const isGatheringNotFound =
+    (gatheringError as AxiosError)?.response?.status === 404;
+
+  if (gatheringError || !gathering) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>
+          {isGatheringNotFound
+            ? 'This gathering is no longer available.'
+            : 'Failed to load gathering.'}
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => (navigation as any).goBack?.()}
+        >
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -374,6 +443,19 @@ export default function EditGatheringScreen() {
             {updateMutation.isPending ? 'Updating...' : 'Update Gathering'}
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.deleteButton,
+            deleteMutation.isPending && styles.buttonDisabled,
+          ]}
+          onPress={handleDelete}
+          disabled={deleteMutation.isPending}
+        >
+          <Text style={styles.deleteButtonText}>
+            {deleteMutation.isPending ? 'Deleting...' : 'Delete Gathering'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -426,6 +508,18 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    marginTop: 12,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    backgroundColor: '#ff3b30',
+  },
+  deleteButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
