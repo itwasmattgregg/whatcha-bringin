@@ -83,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request', details: error.errors });
+      return res.status(400).json({ error: 'Invalid request', details: error.issues });
     }
     console.error('Error verifying code:', error);
     return res.status(500).json({ error: 'Failed to verify code' });

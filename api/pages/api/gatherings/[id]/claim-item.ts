@@ -68,7 +68,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
     return res.status(200).json(updatedItem);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request', details: error.errors });
+      return res.status(400).json({ error: 'Invalid request', details: error.issues });
     }
     console.error('Error claiming item:', error);
     return res.status(500).json({ error: 'Internal server error' });

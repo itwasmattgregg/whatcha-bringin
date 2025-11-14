@@ -188,7 +188,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       if (error instanceof z.ZodError) {
         return res
           .status(400)
-          .json({ error: 'Invalid request', details: error.errors });
+          .json({ error: 'Invalid request', details: error.issues });
       }
       console.error('Error creating gathering:', error);
       return res.status(500).json({ error: 'Failed to create gathering' });
