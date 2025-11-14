@@ -54,7 +54,11 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       const invitesCollection = db.collection(InviteCollection);
       const user = await db.collection('users').findOne({ _id: userObjectId });
 
-      const inviteFilters = [{ acceptedUserIds: userObjectId }];
+      type InviteFilter =
+        | { acceptedUserIds: ObjectId }
+        | { phoneNumber: string; status: string };
+
+      const inviteFilters: InviteFilter[] = [{ acceptedUserIds: userObjectId }];
 
       if (user?.phoneNumber) {
         inviteFilters.push({
