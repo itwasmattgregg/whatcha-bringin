@@ -2,9 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../lib/middleware';
 import { uploadImage } from '../../../lib/cloudinary';
+import type { Gathering } from '../../../models/Gathering';
 import { GatheringCollection } from '../../../models/Gathering';
 import { InviteCollection } from '../../../models/Invite';
-import { ObjectId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { z } from 'zod';
 
 // Configure body parser for larger payloads (images)
@@ -85,14 +86,21 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
       const gatheringsCollection = db.collection(GatheringCollection);
 
-      const serializeGathering = (gathering: any) => ({
+      type SerializedGathering = Omit<Gathering, '_id' | 'hostId'> & {
+        _id: string;
+        hostId: string;
+      };
+
+      const serializeGathering = (
+        gathering: WithId<Gathering>
+      ): SerializedGathering => ({
         ...gathering,
         _id: gathering._id.toString(),
         hostId: gathering.hostId.toString(),
       });
 
       if (range === 'past') {
-        const pastOrFilters = [{ hostId: userObjectId }] as any[];
+        const pastOrFilters: Filter<Gathering>[] = [{ hostId: userObjectId }];
         if (joinedGatheringIds.length) {
           pastOrFilters.push({ _id: { $in: joinedGatheringIds } });
         }

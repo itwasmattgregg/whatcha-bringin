@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '../../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../../lib/middleware';
 import { uploadImage } from '../../../../lib/cloudinary';
+import type { Gathering } from '../../../../models/Gathering';
 import { GatheringCollection } from '../../../../models/Gathering';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
@@ -54,9 +55,10 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       return res.status(403).json({ error: 'Only the host can update the theme' });
     }
 
-    const { coverImage, animatedBackground, removeCoverImage } = updateThemeSchema.parse(req.body);
+    const { coverImage, animatedBackground, removeCoverImage } =
+      updateThemeSchema.parse(req.body);
 
-    const updates: any = {
+    const updates: Partial<Gathering> & { updatedAt: Date } = {
       updatedAt: new Date(),
     };
 

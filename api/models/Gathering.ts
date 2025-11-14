@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb';
 export interface Gathering {
   _id?: ObjectId;
   name: string;
-  image?: string;
-  coverImage?: string; // Cover image URL (uploaded to Cloudinary)
+  image?: string | null;
+  coverImage?: string | null; // Cover image URL (uploaded to Cloudinary)
   animatedBackground?: string; // Animated background name (e.g., 'confetti', 'stars', etc.)
   date: string;
   time: string;

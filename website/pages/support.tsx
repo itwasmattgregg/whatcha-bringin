@@ -32,7 +32,7 @@ export default function SupportPage() {
       return;
     }
 
-    if ((window as any).grecaptcha) {
+    if (window.grecaptcha) {
       setIsRecaptchaLoaded(true);
       return;
     }
@@ -50,7 +50,9 @@ export default function SupportPage() {
     document.head.appendChild(script);
 
     return () => {
-      document.head.removeChild(script);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
   }, []);
 
@@ -59,16 +61,15 @@ export default function SupportPage() {
       !RECAPTCHA_SITE_KEY ||
       !isRecaptchaLoaded ||
       typeof window === 'undefined' ||
-      !(window as any).grecaptcha
+      !window.grecaptcha
     ) {
       return 'dev-token';
     }
 
     try {
-      const token = await (window as any).grecaptcha.execute(
-        RECAPTCHA_SITE_KEY,
-        { action: 'submit' }
-      );
+      const token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, {
+        action: 'submit',
+      });
       return token;
     } catch (error) {
       console.warn(
@@ -129,12 +130,13 @@ export default function SupportPage() {
       setEmail('');
       setMessage('');
       setType('other');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Support form submission failed:', error);
-      setErrorMessage(
-        error?.message ||
-          'Something went wrong. Please try again or email support.'
-      );
+      const fallbackMessage =
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again or email support.';
+      setErrorMessage(fallbackMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,7 +159,7 @@ export default function SupportPage() {
         <meta name='twitter:image' content={socialImage} />
         <link rel='canonical' href={canonicalUrl} />
       </Head>
-      <main className='min-h-screen bg-gradient-to-b from-green-50 via-white to-white py-16 px-4'>
+      <main className='min-h-screen bg-linear-to-b from-green-50 via-white to-white py-16 px-4'>
         <div className='max-w-5xl mx-auto grid gap-12 lg:grid-cols-2'>
           <section className='bg-white/90 backdrop-blur border border-green-100 rounded-3xl shadow-lg p-8 space-y-6'>
             <p className='text-sm uppercase tracking-[0.3em] text-green-600'>

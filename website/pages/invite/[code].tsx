@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { buildCanonicalUrl, getAbsoluteSocialImage, SITE_NAME } from '../../lib/seo';
 
+type ExtendedWindow = Window & {
+  MSStream?: unknown;
+  opera?: string;
+};
+
 interface Gathering {
   _id: string;
   name: string;
@@ -33,9 +38,11 @@ export default function InvitePage() {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== 'undefined') {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const extendedWindow = window as ExtendedWindow;
+      const userAgent =
+        navigator.userAgent || navigator.vendor || extendedWindow.opera || '';
       
-      if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      if (/iPad|iPhone|iPod/.test(userAgent) && !extendedWindow.MSStream) {
         setAppStoreUrl('https://apps.apple.com/app/watcha-bringin'); // Placeholder
       } else if (/android/i.test(userAgent)) {
         setAppStoreUrl('https://play.google.com/store/apps/details?id=com.watchabringin'); // Placeholder

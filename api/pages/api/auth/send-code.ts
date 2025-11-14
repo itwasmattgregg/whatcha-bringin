@@ -53,18 +53,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: 'Verification code sent',
         verificationSid, // Optional: return SID for debugging
       });
-    } catch (verifyError: any) {
+    } catch (verifyError) {
+      const twilioError =
+        typeof verifyError === 'object' && verifyError !== null
+          ? (verifyError as { code?: number; message?: string })
+          : undefined;
+
       console.error('Failed to send verification code:', verifyError);
       
       // Return appropriate error based on Twilio error code
-      if (verifyError.code === 60200) {
+      if (twilioError?.code === 60200) {
         return res.status(400).json({ error: 'Invalid phone number format' });
-      } else if (verifyError.code === 60203) {
+      } else if (twilioError?.code === 60203) {
         return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
       } else {
         return res.status(500).json({ 
           error: 'Failed to send verification code',
-          details: process.env.NODE_ENV === 'development' ? verifyError.message : undefined,
+          details: process.env.NODE_ENV === 'development' ? twilioError?.message : undefined,
         });
       }
     }

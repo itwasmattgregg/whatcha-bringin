@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
 
+type ExtendedWindow = Window & {
+  MSStream?: unknown;
+  opera?: string;
+};
+
 export default function Hero() {
   const [appStoreUrl, setAppStoreUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -8,9 +13,11 @@ export default function Hero() {
   useEffect(() => {
     setIsClient(true);
     if (typeof window !== 'undefined') {
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const extendedWindow = window as ExtendedWindow;
+      const userAgent =
+        navigator.userAgent || navigator.vendor || extendedWindow.opera || '';
       
-      if (/iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream) {
+      if (/iPad|iPhone|iPod/.test(userAgent) && !extendedWindow.MSStream) {
         setOsName('iOS');
         setAppStoreUrl('https://apps.apple.com/app/watcha-bringin'); // Placeholder
       } else if (/android/i.test(userAgent)) {

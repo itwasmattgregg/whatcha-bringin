@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDb } from '../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../lib/middleware';
 import { uploadImage } from '../../../lib/cloudinary';
+import type { Gathering } from '../../../models/Gathering';
 import { GatheringCollection } from '../../../models/Gathering';
 import { ObjectId } from 'mongodb';
 import { z } from 'zod';
@@ -60,7 +61,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       });
       
       const updates = updateSchema.parse(req.body);
-      const updateData: any = {
+      const updateData: Partial<Gathering> & { updatedAt: Date } = {
         updatedAt: new Date(),
       };
       
