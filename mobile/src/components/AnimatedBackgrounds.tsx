@@ -10,6 +10,7 @@ export type AnimatedBackgroundType =
   | 'gradient'
   | 'particles'
   | 'rainbow'
+  | 'rainbowSwirl'
   | 'aurora'
   | 'bubbles'
   | 'sparkles'
@@ -27,6 +28,7 @@ export const ANIMATED_BACKGROUNDS: AnimatedBackgroundType[] = [
   'gradient',
   'particles',
   'rainbow',
+  'rainbowSwirl',
   'aurora',
   'bubbles',
   'sparkles',
@@ -34,30 +36,11 @@ export const ANIMATED_BACKGROUNDS: AnimatedBackgroundType[] = [
 ];
 
 export function AnimatedBackground({ type, style }: AnimatedBackgroundProps) {
-  switch (type) {
-    case 'confetti':
-      return <ConfettiBackground style={style} />;
-    case 'stars':
-      return <StarsBackground style={style} />;
-    case 'waves':
-      return <WavesBackground style={style} />;
-    case 'gradient':
-      return <GradientBackground style={style} />;
-    case 'particles':
-      return <ParticlesBackground style={style} />;
-    case 'rainbow':
-      return <RainbowBackground style={style} />;
-    case 'aurora':
-      return <AuroraBackground style={style} />;
-    case 'bubbles':
-      return <BubblesBackground style={style} />;
-    case 'sparkles':
-      return <SparklesBackground style={style} />;
-    case 'cosmic':
-      return <CosmicBackground style={style} />;
-    default:
-      return <View style={style} />;
+  const Component = BACKGROUND_COMPONENTS[type];
+  if (!Component) {
+    return <View style={style} />;
   }
+  return <Component style={style} />;
 }
 
 // Confetti Background - Modern colorful falling confetti
@@ -511,7 +494,7 @@ function RainbowBackground({ style }: { style?: any }) {
     Animated.loop(
       Animated.timing(animValue, {
         toValue: 1,
-        duration: 8000,
+        duration: 14000,
         easing: Easing.linear,
         useNativeDriver: false,
       })
@@ -539,11 +522,11 @@ function RainbowBackground({ style }: { style?: any }) {
       {colors.map((item, i) => {
         const scale = animValue.interpolate({
           inputRange: [0, 0.5, 1],
-          outputRange: [1, 1.1, 1],
+          outputRange: [1, 1.05, 1],
         });
         const opacity = animValue.interpolate({
           inputRange: [0, 0.5, 1],
-          outputRange: [0.6, 0.9, 0.6],
+          outputRange: [0.45, 0.85, 0.45],
         });
 
         return (
@@ -552,11 +535,11 @@ function RainbowBackground({ style }: { style?: any }) {
             style={[
               {
                 position: 'absolute',
-                width: '150%',
-                height: '20%',
+                width: '300%',
+                height: '22%',
                 backgroundColor: item.color,
                 top: `${i * 12.5}%`,
-                left: '-25%',
+                left: '-100%',
                 borderRadius: 200,
                 opacity,
                 transform: [{ rotate }, { scale }],
@@ -565,6 +548,100 @@ function RainbowBackground({ style }: { style?: any }) {
           />
         );
       })}
+    </View>
+  );
+}
+
+// Rainbow Swirl Background - tie-dye cyclone
+function RainbowSwirlBackground({ style }: { style?: any }) {
+  const warp = React.useRef(new Animated.Value(0)).current;
+  const ripple = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.timing(warp, {
+        toValue: 1,
+        duration: 24000,
+        easing: Easing.linear,
+        useNativeDriver: false,
+      })
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(ripple, {
+          toValue: 1,
+          duration: 7000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(ripple, {
+          toValue: 0,
+          duration: 7000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const rotate = warp.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '720deg'],
+  });
+
+  const rippleScale = ripple.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.9, 1.08, 0.95],
+  });
+
+  const swirlColors = [
+    '#ff6b6b',
+    '#ffd166',
+    '#06d6a0',
+    '#118ab2',
+    '#ef476f',
+    '#a855f7',
+  ];
+
+  return (
+    <View style={[styles.container, style]}>
+      <View style={styles.swirlTieDyeBase}>
+        <View style={styles.swirlTieDyeGlowOne} />
+        <View style={styles.swirlTieDyeGlowTwo} />
+      </View>
+      <Animated.View
+        style={[
+          styles.swirlTieDyeCore,
+          {
+            transform: [{ rotate }, { scale: rippleScale }],
+          },
+        ]}
+      >
+        {swirlColors.map((color, index) => (
+          <View
+            key={`${color}-${index}`}
+            style={[
+              styles.swirlTieDyeBand,
+              {
+                backgroundColor: color,
+                transform: [
+                  { rotate: `${index * (360 / swirlColors.length)}deg` },
+                  { scale: 1 + index * 0.12 },
+                ],
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.swirlTieDyeBlend,
+                { backgroundColor: `${color}33` },
+              ]}
+            />
+          </View>
+        ))}
+        <View style={styles.swirlTieDyeTexture} />
+      </Animated.View>
     </View>
   );
 }
@@ -699,110 +776,125 @@ function AuroraBackground({ style }: { style?: any }) {
   );
 }
 
-// Bubbles Background - Modern floating bubbles
+// Bubbles Background - Bright airy float party
 function BubblesBackground({ style }: { style?: any }) {
-  const bubbles = Array.from({ length: 20 }, (_, i) => ({
-    animY: new Animated.Value(0),
-    animX: new Animated.Value(0),
-    animScale: new Animated.Value(1),
-    left: `${(i * 13.7) % 100}%`,
-    size: 20 + (i % 6) * 15,
-    delay: i * 300,
-    duration: 4000 + Math.random() * 3000,
-  }));
+  const palette = [
+    '#FF9AA2',
+    '#FFB7B2',
+    '#FFDAC1',
+    '#E2F0CB',
+    '#B5EAD7',
+    '#C7CEEA',
+  ];
+
+  const bubbles = React.useMemo(
+    () =>
+      Array.from({ length: 24 }, (_, i) => {
+        const progress = new Animated.Value(Math.random());
+        return {
+          progress,
+          size: 30 + (i % 5) * 16,
+          left: (i * 17) % 100,
+          drift: 12 + (i % 3) * 6,
+          duration: 5200 + Math.random() * 3200,
+          delay: i * 120,
+          color: palette[i % palette.length],
+        };
+      }),
+    []
+  );
 
   React.useEffect(() => {
-    const animations = bubbles.flatMap((bubble) => [
+    const animations = bubbles.map((bubble) =>
       Animated.loop(
         Animated.sequence([
           Animated.delay(bubble.delay),
-          Animated.parallel([
-            Animated.timing(bubble.animY, {
-              toValue: 1,
-              duration: bubble.duration,
-              easing: Easing.linear,
-              useNativeDriver: false,
-            }),
-            Animated.timing(bubble.animX, {
-              toValue: 1,
-              duration: bubble.duration * 1.5,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: false,
-            }),
-            Animated.sequence([
-              Animated.timing(bubble.animScale, {
-                toValue: 1.1,
-                duration: bubble.duration / 2,
-                easing: Easing.inOut(Easing.ease),
-                useNativeDriver: false,
-              }),
-              Animated.timing(bubble.animScale, {
-                toValue: 0.9,
-                duration: bubble.duration / 2,
-                easing: Easing.inOut(Easing.ease),
-                useNativeDriver: false,
-              }),
-            ]),
-          ]),
-          Animated.timing(bubble.animY, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: false,
-          }),
-          Animated.timing(bubble.animX, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: false,
-          }),
-          Animated.timing(bubble.animScale, {
+          Animated.timing(bubble.progress, {
             toValue: 1,
+            duration: bubble.duration,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: false,
+          }),
+          Animated.timing(bubble.progress, {
+            toValue: 0,
             duration: 0,
             useNativeDriver: false,
           }),
         ])
-      ),
-    ]);
+      )
+    );
     Animated.parallel(animations).start();
-  }, []);
+  }, [bubbles]);
 
   return (
-    <View style={[styles.container, { backgroundColor: '#e0f2fe' }, style]}>
-      {bubbles.map((bubble, i) => {
-        const translateY = bubble.animY.interpolate({
+    <View style={[styles.container, style]}>
+      <View style={styles.bubblesBaseLight}>
+        <View style={styles.bubblesSunGlow} />
+        <View style={styles.bubblesShadow} />
+      </View>
+      {bubbles.map((bubble, index) => {
+        const translateY = bubble.progress.interpolate({
           inputRange: [0, 1],
-          outputRange: [SCREEN_HEIGHT * 1.1, -SCREEN_HEIGHT * 0.1],
+          outputRange: [SCREEN_HEIGHT * 0.7, -SCREEN_HEIGHT * 0.2],
         });
-        const translateX = bubble.animX.interpolate({
+        const translateX = bubble.progress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0, SCREEN_WIDTH * 0.1],
+          outputRange: [
+            -bubble.drift,
+            bubble.drift * (index % 2 === 0 ? 1 : -1),
+          ],
+        });
+        const scale = bubble.progress.interpolate({
+          inputRange: [0, 0.3, 0.6, 1],
+          outputRange: [0.85, 1.05, 0.95, 1.1],
+        });
+        const opacity = bubble.progress.interpolate({
+          inputRange: [0, 0.1, 0.9, 1],
+          outputRange: [0, 0.9, 0.9, 0],
+        });
+
+        const rotate = bubble.progress.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', index % 2 === 0 ? '25deg' : '-25deg'],
         });
 
         return (
           <Animated.View
-            key={i}
+            key={index}
             style={[
+              styles.bubble,
               {
-                position: 'absolute',
                 width: bubble.size,
                 height: bubble.size,
-                borderRadius: bubble.size / 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                borderWidth: 2,
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                left: bubble.left as any,
-                bottom: '0%',
+                left: `${bubble.left}%`,
+                backgroundColor: `${bubble.color}55`,
+                borderColor: `${bubble.color}aa`,
+                shadowColor: bubble.color,
+                opacity,
                 transform: [
                   { translateY },
                   { translateX },
-                  { scale: bubble.animScale },
+                  { scale },
+                  { rotate },
                 ],
-                shadowColor: '#fff',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
               },
             ]}
-          />
+          >
+            <View
+              style={[
+                styles.bubbleInner,
+                { backgroundColor: `${bubble.color}40` },
+              ]}
+            />
+            <View
+              style={[
+                styles.bubbleHighlight,
+                {
+                  borderColor: `${bubble.color}80`,
+                },
+              ]}
+            />
+          </Animated.View>
         );
       })}
     </View>
@@ -950,6 +1042,23 @@ function CosmicBackground({ style }: { style?: any }) {
   );
 }
 
+const BACKGROUND_COMPONENTS: Record<
+  AnimatedBackgroundType,
+  React.ComponentType<{ style?: any }>
+> = {
+  confetti: ConfettiBackground,
+  stars: StarsBackground,
+  waves: WavesBackground,
+  gradient: GradientBackground,
+  particles: ParticlesBackground,
+  rainbow: RainbowBackground,
+  rainbowSwirl: RainbowSwirlBackground,
+  aurora: AuroraBackground,
+  bubbles: BubblesBackground,
+  sparkles: SparklesBackground,
+  cosmic: CosmicBackground,
+};
+
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -974,5 +1083,114 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     top: '10%',
     left: '10%',
+  },
+  bubble: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bubbleInner: {
+    width: '60%',
+    height: '60%',
+    borderRadius: 999,
+  },
+  bubblesHighlight: {
+    position: 'absolute',
+    top: 24,
+    left: 24,
+    right: 24,
+    height: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  bubblesBaseLight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#F8FBFF',
+  },
+  bubblesSunGlow: {
+    position: 'absolute',
+    top: -100,
+    left: -60,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+  },
+  bubblesShadow: {
+    position: 'absolute',
+    bottom: -120,
+    right: -80,
+    width: SCREEN_WIDTH * 1.3,
+    height: SCREEN_WIDTH * 0.9,
+    borderRadius: SCREEN_WIDTH,
+    backgroundColor: 'rgba(214, 238, 255, 0.6)',
+  },
+  bubbleHighlight: {
+    position: 'absolute',
+    width: '140%',
+    height: '140%',
+    borderRadius: 999,
+    borderWidth: 0.7,
+  },
+  swirlTieDyeBase: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#fdf6f0',
+  },
+  swirlTieDyeGlowOne: {
+    position: 'absolute',
+    top: -80,
+    left: -40,
+    width: SCREEN_WIDTH * 0.8,
+    height: SCREEN_WIDTH * 0.8,
+    borderRadius: SCREEN_WIDTH,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+  swirlTieDyeGlowTwo: {
+    position: 'absolute',
+    bottom: -100,
+    right: -60,
+    width: SCREEN_WIDTH * 1.1,
+    height: SCREEN_WIDTH * 0.9,
+    borderRadius: SCREEN_WIDTH,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  swirlTieDyeCore: {
+    position: 'absolute',
+    top: '5%',
+    left: '5%',
+    width: '90%',
+    height: '90%',
+    borderRadius: SCREEN_WIDTH * 0.8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  swirlTieDyeBand: {
+    position: 'absolute',
+    width: '320%',
+    height: 120,
+    borderRadius: 120,
+    opacity: 0.8,
+  },
+  swirlTieDyeBlend: {
+    flex: 1,
+    borderRadius: 120,
+  },
+  swirlTieDyeTexture: {
+    position: 'absolute',
+    width: '85%',
+    height: '85%',
+    borderRadius: SCREEN_WIDTH * 0.7,
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
 });

@@ -4,15 +4,22 @@ import { FeedbackCollection } from '../../models/Feedback';
 import { verifyRecaptcha } from '../../lib/recaptcha';
 import { sendFeedbackEmail } from '../../lib/email';
 import { z } from 'zod';
+import { createGithubIssue } from '../../lib/github';
 
 const feedbackSchema = z.object({
   email: z.string().email('Invalid email address'),
-  message: z.string().min(10, 'Message must be at least 10 characters').max(2000, 'Message is too long'),
+  message: z
+    .string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(2000, 'Message is too long'),
   type: z.enum(['praise', 'bug', 'feature-request', 'other']).optional(),
   recaptchaToken: z.string().min(1, 'reCAPTCHA token is required'),
 });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Enable CORS for public feedback endpoint
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -28,7 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { email, message, type, recaptchaToken } = feedbackSchema.parse(req.body);
+    const { email, message, type, recaptchaToken } = feedbackSchema.parse(
+      req.body
+    );
 
     console.log('Feedback submission received:', {
       email,
@@ -41,7 +50,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isHuman = await verifyRecaptcha(recaptchaToken);
     if (!isHuman) {
       console.error('reCAPTCHA verification failed for feedback submission');
-      return res.status(400).json({ error: 'reCAPTCHA verification failed. Please try again.' });
+      return res
+        .status(400)
+        .json({ error: 'reCAPTCHA verification failed. Please try again.' });
     }
 
     const db = await getDb();
@@ -69,6 +80,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Failed to send feedback email:', error);
     });
 
+    const normalizedType = type || 'other';
+    if (normalizedType === 'bug' || normalizedType === 'feature-request') {
+      const issueBody = `${message}\n\n---\nReporter email: ${email}\nType: ${normalizedType}`;
+      const isBug = normalizedType === 'bug';
+      const issueOptions = {
+        labels: ['support-form', isBug ? 'bug' : 'feature-request'],
+        titlePrefix: isBug ? 'Bug' : 'Feature request',
+      };
+      createGithubIssue(message, issueBody, issueOptions).catch((err) => {
+        console.error(
+          `Failed to open GitHub issue for ${normalizedType} feedback:`,
+          err
+        );
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Thank you for your feedback!',
@@ -76,10 +103,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request', details: error.errors });
+      return res
+        .status(400)
+        .json({ error: 'Invalid request', details: error.issues });
     }
     console.error('Error submitting feedback:', error);
-    return res.status(500).json({ error: 'Failed to submit feedback. Please try again later.' });
+    return res
+      .status(500)
+      .json({ error: 'Failed to submit feedback. Please try again later.' });
   }
 }
-

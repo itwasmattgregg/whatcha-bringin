@@ -316,7 +316,7 @@ export default function GatheringDetailScreen() {
             ))
           ) : (
             <Text style={styles.emptyText}>
-              No items yet. Add some items to bring!
+              No items yet. Add some items you want people to bring!
             </Text>
           )}
         </View>

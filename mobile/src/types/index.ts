@@ -39,6 +39,15 @@ export interface Invite {
   createdAt: string;
 }
 
+export interface GatheringsGroupedResponse {
+  created: Gathering[];
+  joined: Gathering[];
+}
+
+export interface PastGatheringsResponse {
+  past: Gathering[];
+}
+
 export interface AuthResponse {
   token: string;
   user: User;

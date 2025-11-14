@@ -36,6 +36,11 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
 FEEDBACK_EMAIL_TO=your-email@gmail.com
+
+# GitHub issue bridge
+GITHUB_PAT=ghp_yourfinegrainedtoken
+GITHUB_REPO_OWNER=your-github-username-or-org
+GITHUB_REPO_NAME=whatcha-bringin
 ```
 
 ## Mobile App
@@ -116,4 +121,10 @@ You can use Gmail, SendGrid, or any SMTP provider:
 
 **For SendGrid or other providers:**
 Use their SMTP settings accordingly.
+
+### GitHub Personal Access Token
+1. Create a **fine-grained personal access token** scoped to the repository that should receive support issues.
+2. Grant at minimum the `Issues: Read and Write` permission.
+3. Store the token as `GITHUB_PAT` in `api/.env.local`.
+4. Set `GITHUB_REPO_OWNER` and `GITHUB_REPO_NAME` if the repository differs between environments.
 

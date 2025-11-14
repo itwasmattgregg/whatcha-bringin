@@ -38,30 +38,26 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 
     // Check if user is already the host
     if (gathering.hostId.toString() === userId) {
-      return res.status(400).json({ error: 'You are already the host of this gathering' });
+      return res
+        .status(400)
+        .json({ error: 'You are already the host of this gathering' });
     }
 
-    // Check if user is already invited (by phone number)
-    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
-    if (user && user.phoneNumber && invite.phoneNumber === user.phoneNumber) {
-      // User is already invited via phone number, just update status
-      await db.collection(InviteCollection).updateOne(
-        { _id: invite._id },
-        { $set: { status: 'accepted' } }
-      );
-    } else {
-      // Create a new invite record for this user (or update existing)
-      await db.collection(InviteCollection).updateOne(
-        { gatheringId: invite.gatheringId, code },
-        {
-          $set: {
-            status: 'accepted',
-            acceptedAt: new Date(),
-          },
+    const userObjectId = new ObjectId(userId);
+
+    // Ensure the accepted list exists and include this user
+    await db.collection(InviteCollection).updateOne(
+      { _id: invite._id },
+      {
+        $set: {
+          status: 'accepted',
+          acceptedAt: new Date(),
         },
-        { upsert: false }
-      );
-    }
+        $addToSet: {
+          acceptedUserIds: userObjectId,
+        },
+      }
+    );
 
     // Return the gathering so user can navigate to it
     return res.status(200).json({
@@ -83,4 +79,3 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
 }
 
 export default withAuth(handler);
-

@@ -23,6 +23,13 @@ import {
   AnimatedBackground,
 } from '../components/AnimatedBackgrounds';
 
+const formatBackgroundLabel = (value?: AnimatedBackgroundType) => {
+  if (!value) return 'None';
+  return value
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (char) => char.toUpperCase());
+};
+
 export default function EditGatheringScreen() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -303,7 +310,7 @@ export default function EditGatheringScreen() {
           >
             <Text style={styles.backgroundPickerText}>
               {animatedBackground
-                ? `Selected: ${animatedBackground}`
+                ? `Selected: ${formatBackgroundLabel(animatedBackground)}`
                 : 'Select Background'}
             </Text>
             <Text style={styles.backgroundPickerArrow}>
@@ -346,7 +353,9 @@ export default function EditGatheringScreen() {
                       style={styles.backgroundPreview}
                     />
                   </View>
-                  <Text style={styles.backgroundOptionText}>{bg}</Text>
+                  <Text style={styles.backgroundOptionText}>
+                    {formatBackgroundLabel(bg)}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>

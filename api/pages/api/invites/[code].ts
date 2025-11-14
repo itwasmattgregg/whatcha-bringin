@@ -3,6 +3,7 @@ import { getDb } from '../../../lib/db';
 import { GatheringCollection } from '../../../models/Gathering';
 import { InviteCollection } from '../../../models/Invite';
 import { ObjectId } from 'mongodb';
+import { hashInviteCode } from '../../../lib/inviteCodes';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Enable CORS for public invite endpoint
@@ -29,10 +30,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const db = await getDb();
 
     // Find invite by code
-    const invite = await db.collection(InviteCollection).findOne({ code });
+    let invite = await db.collection(InviteCollection).findOne({
+      hashedCode: code,
+    });
+
+    // Fall back to legacy short codes
+    if (!invite) {
+      invite = await db.collection(InviteCollection).findOne({ code });
+    }
 
     if (!invite) {
       return res.status(404).json({ error: 'Invite not found' });
+    }
+
+    // Backfill hashed code for legacy records
+    if (invite.code && !invite.hashedCode) {
+      invite.hashedCode = hashInviteCode(invite.code);
+      await db.collection(InviteCollection).updateOne(
+        { _id: invite._id },
+        { $set: { hashedCode: invite.hashedCode } }
+      );
     }
 
     // Get gathering details

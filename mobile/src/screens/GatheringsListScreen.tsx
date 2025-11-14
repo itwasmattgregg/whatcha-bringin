@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -22,24 +23,38 @@ type AppStackParamList = {
   EditGathering: { gatheringId: string };
 };
 
-type GatheringsListNavigationProp = NativeStackNavigationProp<AppStackParamList>;
+type GatheringsListNavigationProp =
+  NativeStackNavigationProp<AppStackParamList>;
 
 export default function GatheringsListScreen() {
   const navigation = useNavigation<GatheringsListNavigationProp>();
   const insets = useSafeAreaInsets();
+  const [showPast, setShowPast] = useState(false);
 
   const {
-    data: gatherings,
-    isLoading,
-    refetch,
-    isRefetching,
+    data: upcomingGatherings,
+    isLoading: isUpcomingLoading,
+    refetch: refetchUpcoming,
+    isRefetching: isUpcomingRefetching,
   } = useQuery({
-    queryKey: ['gatherings'],
-    queryFn: gatheringsService.getGatherings,
+    queryKey: ['gatherings', 'upcoming'],
+    queryFn: gatheringsService.getUpcomingGatherings,
   });
 
-  const renderGathering = ({ item }: { item: Gathering }) => (
+  const {
+    data: pastGatherings,
+    isLoading: isPastLoading,
+    refetch: refetchPast,
+    isRefetching: isPastRefetching,
+  } = useQuery({
+    queryKey: ['gatherings', 'past'],
+    queryFn: gatheringsService.getPastGatherings,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const renderGathering = (item: Gathering) => (
     <TouchableOpacity
+      key={item._id}
       style={styles.gatheringCard}
       onPress={() =>
         navigation.navigate('GatheringDetail', { gatheringId: item._id })
@@ -60,7 +75,23 @@ export default function GatheringsListScreen() {
     </TouchableOpacity>
   );
 
-  if (isLoading) {
+  const created = upcomingGatherings?.created ?? [];
+  const joined = upcomingGatherings?.joined ?? [];
+  const past = pastGatherings?.past ?? [];
+
+  const refreshing = isUpcomingRefetching || (showPast && isPastRefetching);
+  const isPastLoadingInitial = isPastLoading && past.length === 0;
+
+  const handleRefresh = useCallback(() => {
+    refetchUpcoming();
+    if (showPast) {
+      refetchPast();
+    }
+  }, [refetchUpcoming, refetchPast, showPast]);
+
+  const hasUpcoming = created.length > 0 || joined.length > 0;
+
+  if (isUpcomingLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <Text style={styles.loadingText}>Loading your gatherings...</Text>
@@ -68,7 +99,7 @@ export default function GatheringsListScreen() {
     );
   }
 
-  if (!gatherings || gatherings.length === 0) {
+  if (!hasUpcoming) {
     return (
       <View
         style={[
@@ -79,7 +110,8 @@ export default function GatheringsListScreen() {
       >
         <Text style={styles.emptyTitle}>No gatherings yet!</Text>
         <Text style={styles.emptySubtitle}>
-          Tap Create Gathering to start one or join an existing party with a code.
+          Tap Create Gathering to start one or join an existing party with a
+          code.
         </Text>
         <View style={styles.emptyActions}>
           <TouchableOpacity
@@ -95,29 +127,96 @@ export default function GatheringsListScreen() {
             <Text style={styles.createButtonText}>Create Gathering</Text>
           </TouchableOpacity>
         </View>
+        <View style={[styles.pastSection, styles.emptyPastSection]}>
+          <View style={styles.pastHeader}>
+            <Text style={styles.sectionTitle}>Past gatherings</Text>
+            <TouchableOpacity
+              style={styles.pastToggleButton}
+              onPress={() => setShowPast((prev) => !prev)}
+            >
+              <Text style={styles.pastToggleButtonText}>
+                {showPast ? 'Hide' : 'Show'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showPast && (
+            <View style={styles.pastContent}>
+              {isPastLoadingInitial ? (
+                <ActivityIndicator color='#4CAF50' />
+              ) : past.length === 0 ? (
+                <Text style={styles.sectionEmpty}>
+                  No past gatherings to show.
+                </Text>
+              ) : (
+                past.map(renderGathering)
+              )}
+            </View>
+          )}
+        </View>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <FlatList
-        data={gatherings}
-        renderItem={renderGathering}
-        keyExtractor={(item) => item._id}
+      <ScrollView
         contentContainerStyle={styles.list}
-        ListHeaderComponent={
-          <TouchableOpacity
-            style={styles.joinButton}
-            onPress={() => navigation.navigate('JoinGathering')}
-          >
-            <Text style={styles.joinButtonText}>🔑 Join with Code</Text>
-          </TouchableOpacity>
-        }
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-      />
+      >
+        <TouchableOpacity
+          style={styles.joinButton}
+          onPress={() => navigation.navigate('JoinGathering')}
+        >
+          <Text style={styles.joinButtonText}>🔑 Join with Code</Text>
+        </TouchableOpacity>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Created by you</Text>
+          {created.length === 0 ? (
+            <Text style={styles.sectionEmpty}>
+              You haven't created any upcoming gatherings yet.
+            </Text>
+          ) : (
+            created.map(renderGathering)
+          )}
+        </View>
+
+        {joined.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Joined gatherings</Text>
+            {joined.map(renderGathering)}
+          </View>
+        )}
+
+        <View style={styles.pastSection}>
+          <View style={styles.pastHeader}>
+            <Text style={styles.sectionTitle}>Past gatherings</Text>
+            <TouchableOpacity
+              style={styles.pastToggleButton}
+              onPress={() => setShowPast((prev) => !prev)}
+            >
+              <Text style={styles.pastToggleButtonText}>
+                {showPast ? 'Hide' : 'Show'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showPast && (
+            <View style={styles.pastContent}>
+              {isPastLoadingInitial ? (
+                <ActivityIndicator color='#4CAF50' />
+              ) : past.length === 0 ? (
+                <Text style={styles.sectionEmpty}>
+                  No past gatherings to show.
+                </Text>
+              ) : (
+                past.map(renderGathering)
+              )}
+            </View>
+          )}
+        </View>
+      </ScrollView>
       <TouchableOpacity
         style={[styles.fab, { bottom: insets.bottom + 20 }]}
         onPress={() => navigation.navigate('CreateGathering')}
@@ -204,6 +303,7 @@ const styles = StyleSheet.create({
   emptyActions: {
     width: '100%',
     paddingHorizontal: 16,
+    marginBottom: 32,
   },
   createButton: {
     backgroundColor: '#4CAF50',
@@ -252,5 +352,44 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 16,
     fontWeight: '600',
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 12,
+  },
+  sectionEmpty: {
+    fontSize: 14,
+    color: '#777',
+    fontStyle: 'italic',
+  },
+  pastSection: {
+    marginBottom: 40,
+  },
+  pastHeader: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  pastToggleButton: {
+    marginTop: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: '#4CAF50',
+    alignSelf: 'center',
+  },
+  pastToggleButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  pastContent: {
+    marginTop: 12,
+  },
+  emptyPastSection: {
+    marginTop: 48,
   },
 });

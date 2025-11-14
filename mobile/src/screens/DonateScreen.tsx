@@ -10,6 +10,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMutation } from '@tanstack/react-query';
@@ -25,7 +26,9 @@ export default function DonateScreen() {
   const { logout } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-  const [type, setType] = useState<'praise' | 'bug' | 'feature-request' | 'other'>('other');
+  const [type, setType] = useState<
+    'praise' | 'bug' | 'feature-request' | 'other'
+  >('other');
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [showRecaptcha, setShowRecaptcha] = useState(false);
   const recaptchaTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -38,7 +41,10 @@ export default function DonateScreen() {
       recaptchaToken: string;
     }) => feedbackService.submitFeedback(data as any),
     onSuccess: () => {
-      Alert.alert('Thank you!', 'Your feedback has been submitted successfully.');
+      Alert.alert(
+        'Thank you!',
+        'Your feedback has been submitted successfully.'
+      );
       setEmail('');
       setMessage('');
       setType('other');
@@ -46,7 +52,10 @@ export default function DonateScreen() {
     },
     onError: (error: any) => {
       console.error('Feedback submission error:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to submit feedback. Please try again.';
+      const errorMessage =
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to submit feedback. Please try again.';
       Alert.alert('Error', errorMessage);
       setRecaptchaToken(null);
       setShowRecaptcha(false);
@@ -58,23 +67,19 @@ export default function DonateScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+    Alert.alert('Log Out', 'Are you sure you want to log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
         },
-        {
-          text: 'Log Out',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   const handleRecaptchaVerify = (token: string) => {
@@ -104,10 +109,12 @@ export default function DonateScreen() {
       recaptchaTimeoutRef.current = null;
     }
     setShowRecaptcha(false);
-    
+
     // If reCAPTCHA fails to load, automatically submit with dev-token
     // The backend will handle verification (allows dev-token)
-    console.log('reCAPTCHA unavailable, submitting feedback without reCAPTCHA verification');
+    console.log(
+      'reCAPTCHA unavailable, submitting feedback without reCAPTCHA verification'
+    );
     // Small delay to ensure state updates
     setTimeout(() => {
       feedbackMutation.mutate({
@@ -138,8 +145,15 @@ export default function DonateScreen() {
     }
 
     // Trigger reCAPTCHA if configured, otherwise submit directly
-    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY.length > 0 && RECAPTCHA_SITE_KEY !== 'your-recaptcha-site-key') {
-      console.log('Triggering reCAPTCHA with site key:', RECAPTCHA_SITE_KEY.substring(0, 10) + '...');
+    if (
+      RECAPTCHA_SITE_KEY &&
+      RECAPTCHA_SITE_KEY.length > 0 &&
+      RECAPTCHA_SITE_KEY !== 'your-recaptcha-site-key'
+    ) {
+      console.log(
+        'Triggering reCAPTCHA with site key:',
+        RECAPTCHA_SITE_KEY.substring(0, 10) + '...'
+      );
       setShowRecaptcha(true);
       // Clear any existing timeout
       if (recaptchaTimeoutRef.current) {
@@ -147,7 +161,9 @@ export default function DonateScreen() {
       }
       // Add a timeout in case reCAPTCHA doesn't respond (reduced to 5 seconds)
       recaptchaTimeoutRef.current = setTimeout(() => {
-        console.warn('reCAPTCHA timeout after 5 seconds, submitting with dev-token');
+        console.warn(
+          'reCAPTCHA timeout after 5 seconds, submitting with dev-token'
+        );
         setShowRecaptcha(false);
         if (recaptchaTimeoutRef.current) {
           clearTimeout(recaptchaTimeoutRef.current);
@@ -183,16 +199,25 @@ export default function DonateScreen() {
           styles.content,
           { paddingTop: insets.top, paddingBottom: insets.bottom },
         ]}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps='handled'
       >
         <Text style={styles.emoji}>☕</Text>
         <Text style={styles.title}>Support Watcha Bringin</Text>
         <Text style={styles.description}>
-          If you're enjoying Watcha Bringin and want to support its development, consider buying me
-          a coffee! Every contribution helps keep the app running and allows me to add new features.
+          Keeping Whatcha Bringin alive and evolving is a one-human labor of
+          love — it’s just me over here, building features, squashing bugs, and
+          keeping the servers humming. There’s no team, no investors, no
+          mysterious benefactors… just a guy with too many ideas and a very real
+          hosting bill. If the app has made your life a little easier, smoother,
+          or more delightful, tossing a coffee my way truly helps keep the
+          lights on (and keeps me caffeinated enough to ship the next update).
         </Text>
         <Text style={styles.description}>
-          Thank you for being part of the Watcha Bringin community! 🎉
+          Thank you for being part of this quirky little community and for
+          cheering on an indie dev doing his best. Your support — whether it’s a
+          donation, a kind message, or just opening the app every week — means
+          the world. If you’d like to help Whatcha Bringin grow, the link below
+          is the most magical button you can press today. 🎉
         </Text>
 
         <TouchableOpacity style={styles.donateButton} onPress={handleDonate}>
@@ -202,31 +227,48 @@ export default function DonateScreen() {
         <View style={styles.feedbackSection}>
           <Text style={styles.feedbackTitle}>Send Feedback</Text>
           <Text style={styles.feedbackDescription}>
-            Have praise, found a bug, or have a feature request? Let me know! I'll try to work on
-            requests when I have time.
+            Have praise, found a bug, or have a feature request? Let me know!
+            I'll try to work on requests when I have time.
           </Text>
 
           <View style={styles.typeButtons}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'praise' && styles.typeButtonActive]}
+              style={[
+                styles.typeButton,
+                type === 'praise' && styles.typeButtonActive,
+              ]}
               onPress={() => setType('praise')}
             >
               <Text
-                style={[styles.typeButtonText, type === 'praise' && styles.typeButtonTextActive]}
+                style={[
+                  styles.typeButtonText,
+                  type === 'praise' && styles.typeButtonTextActive,
+                ]}
               >
                 👍 Praise
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'bug' && styles.typeButtonActive]}
+              style={[
+                styles.typeButton,
+                type === 'bug' && styles.typeButtonActive,
+              ]}
               onPress={() => setType('bug')}
             >
-              <Text style={[styles.typeButtonText, type === 'bug' && styles.typeButtonTextActive]}>
+              <Text
+                style={[
+                  styles.typeButtonText,
+                  type === 'bug' && styles.typeButtonTextActive,
+                ]}
+              >
                 🐛 Bug
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'feature-request' && styles.typeButtonActive]}
+              style={[
+                styles.typeButton,
+                type === 'feature-request' && styles.typeButtonActive,
+              ]}
               onPress={() => setType('feature-request')}
             >
               <Text
@@ -244,13 +286,13 @@ export default function DonateScreen() {
             <Text style={styles.inputLabel}>Your Email *</Text>
             <TextInput
               style={styles.input}
-              placeholder="your.email@example.com"
+              placeholder='your.email@example.com'
               value={email}
               onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              textContentType="emailAddress"
+              keyboardType='email-address'
+              autoCapitalize='none'
+              autoComplete='email'
+              textContentType='emailAddress'
             />
           </View>
 
@@ -262,20 +304,32 @@ export default function DonateScreen() {
               value={message}
               onChangeText={setMessage}
               multiline
-              textAlignVertical="top"
+              textAlignVertical='top'
               maxLength={2000}
             />
             <Text style={styles.charCount}>{message.length}/2000</Text>
           </View>
 
           <TouchableOpacity
-            style={[styles.submitButton, feedbackMutation.isPending && styles.submitButtonDisabled]}
+            style={[
+              styles.submitButton,
+              feedbackMutation.isPending && styles.submitButtonDisabled,
+            ]}
             onPress={handleSubmit}
             disabled={feedbackMutation.isPending}
           >
-            <Text style={styles.submitButtonText}>
-              {feedbackMutation.isPending ? 'Submitting...' : 'Submit Feedback'}
-            </Text>
+            {feedbackMutation.isPending ? (
+              <View style={styles.submitButtonContent}>
+                <ActivityIndicator
+                  color='#fff'
+                  size='small'
+                  style={styles.submitSpinner}
+                />
+                <Text style={styles.submitButtonText}>Submitting...</Text>
+              </View>
+            ) : (
+              <Text style={styles.submitButtonText}>Submit Feedback</Text>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -424,6 +478,14 @@ const styles = StyleSheet.create({
   submitButtonDisabled: {
     opacity: 0.6,
   },
+  submitButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitSpinner: {
+    marginRight: 8,
+  },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -440,4 +502,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-

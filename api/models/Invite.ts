@@ -6,8 +6,9 @@ export interface Invite {
   phoneNumber?: string; // Optional - no longer required for shareable invites
   status: 'pending' | 'accepted' | 'declined';
   code?: string;
+  hashedCode?: string;
   createdAt: Date;
+  acceptedUserIds?: ObjectId[];
 }
 
 export const InviteCollection = 'invites';
-
