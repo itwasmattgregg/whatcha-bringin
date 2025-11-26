@@ -295,12 +295,11 @@ export default function SupportPage() {
               <p className='text-sm text-gray-500'>
                 Prefer email? Reach me at{' '}
                 <a
-                  href='mailto:privacy@whatcha-bringin.app'
+                  href='mailto:matt@codegregg.com'
                   className='text-green-600 underline'
                 >
-                  privacy@whatcha-bringin.app
+                  matt@codegregg.com
                 </a>
-                .
               </p>
               <Link
                 href='/'
