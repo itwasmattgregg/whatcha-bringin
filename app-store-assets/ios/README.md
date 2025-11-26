@@ -69,6 +69,17 @@ https://whatcha-bringin.app
 ### Privacy Policy URL
 https://whatcha-bringin.app/privacy
 
+## Test Account for App Review
+
+For App Store reviewers to test the app without SMS verification:
+
+**Test Phone Number:** `+15551234567` (or as configured in `TEST_PHONE_NUMBER`)  
+**Verification Code:** `123456` (or as configured in `TEST_VERIFICATION_CODE`)
+
+This test account bypasses Twilio SMS verification and works in production. The credentials are configured via environment variables in the API backend.
+
+**Note:** Include these credentials in the "App Review Information" section of App Store Connect when submitting for review.
+
 ## Submission Checklist
 
 - [ ] App icon (1024x1024)
@@ -77,6 +88,7 @@ https://whatcha-bringin.app/privacy
 - [ ] Keywords
 - [ ] Support URL
 - [ ] Privacy Policy URL
+- [ ] Test account credentials documented for reviewers
 - [ ] App Store Connect account setup
 - [ ] App ID and Bundle ID configured
 - [ ] TestFlight beta testing (optional)

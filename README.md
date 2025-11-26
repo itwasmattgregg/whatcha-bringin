@@ -31,7 +31,17 @@ Need to log in as multiple users but only have one physical phone number? In dev
 2. Use any phone number that starts with `+1555` (for example `+15551234567` or `+15559876543`).
 3. When prompted for the 6-digit code, enter `123456`. The server will accept it and create a separate account for each unique test number.
 
-This works only in development; production still requires real SMS verification.
+This works only in development; production requires real SMS verification unless you configure a production test account (see below).
+
+### Production Test Account (for App Store Reviewers)
+
+To allow app store reviewers to test the app without SMS verification, configure a test account in production:
+
+1. Set `TEST_PHONE_NUMBER` in your API environment variables (e.g., `+15551234567`).
+2. Set `TEST_VERIFICATION_CODE` in your API environment variables (e.g., `123456`).
+3. The configured phone number will bypass Twilio and accept the configured verification code.
+
+**Important:** Include these test credentials in your App Store Connect submission notes for reviewers.
 
 ### Setup
 

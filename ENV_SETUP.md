@@ -41,6 +41,11 @@ FEEDBACK_EMAIL_TO=your-email@gmail.com
 GITHUB_PAT=ghp_yourfinegrainedtoken
 GITHUB_REPO_OWNER=your-github-username-or-org
 GITHUB_REPO_NAME=whatcha-bringin
+
+# Test Account (for app store reviewers - bypasses Twilio)
+# Set these to allow reviewers to test the app without SMS verification
+TEST_PHONE_NUMBER=+15551234567
+TEST_VERIFICATION_CODE=123456
 ```
 
 ## Mobile App

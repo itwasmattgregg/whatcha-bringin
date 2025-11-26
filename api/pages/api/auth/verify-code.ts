@@ -22,14 +22,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Normalize phone number to match the format used when sending the code
     const normalizedPhone = normalizePhoneNumber(phoneNumber);
     
+    // Production test account (for app store reviewers)
+    const testPhoneNumber = process.env.TEST_PHONE_NUMBER;
+    const testCode = process.env.TEST_VERIFICATION_CODE || '000000';
+    const isTestAccount = testPhoneNumber && normalizedPhone === normalizePhoneNumber(testPhoneNumber);
+    const isTestCodeMatch = code === testCode;
+    
     // Development mode: Allow test code "123456" for test phone numbers (numbers starting with +1555)
-    const isTestNumber = normalizedPhone.startsWith('+1555');
+    const isDevTestNumber = normalizedPhone.startsWith('+1555');
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const isTestCode = code === '123456';
+    const isDevTestCode = code === '123456';
     
     let isVerified = false;
     
-    if (isDevelopment && isTestNumber && isTestCode) {
+    if (isTestAccount && isTestCodeMatch) {
+      console.log(`[TEST ACCOUNT] Test code accepted for test account ${normalizedPhone}`);
+      isVerified = true;
+    } else if (isDevelopment && isDevTestNumber && isDevTestCode) {
       console.log(`[DEV MODE] Test code accepted for test number ${normalizedPhone}`);
       isVerified = true;
     } else {

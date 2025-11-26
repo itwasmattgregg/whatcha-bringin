@@ -10,3 +10,4 @@ declare module '@expo/vector-icons/Ionicons' {
 
   export default class Ionicons extends React.Component<IoniconsProps> {}
 }
+
