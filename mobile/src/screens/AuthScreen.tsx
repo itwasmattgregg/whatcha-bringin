@@ -43,8 +43,33 @@ export default function AuthScreen() {
       return;
     }
     
-    // Format phone number (add + if not present)
-    const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+1${phoneNumber.replace(/\D/g, '')}`;
+    // Format phone number to E.164 format
+    // Remove all non-digit characters except +
+    const cleaned = phoneNumber.replace(/[^\d+]/g, '');
+    
+    let formattedPhone: string;
+    
+    // If it already starts with +, return as is
+    if (cleaned.startsWith('+')) {
+      formattedPhone = cleaned;
+    }
+    // If it's a 10-digit US number, add +1
+    else if (/^\d{10}$/.test(cleaned)) {
+      formattedPhone = `+1${cleaned}`;
+    }
+    // If it's an 11-digit number starting with 1, add +
+    else if (/^1\d{10}$/.test(cleaned)) {
+      formattedPhone = `+${cleaned}`;
+    }
+    // If it's already 11+ digits without +, add +
+    else if (/^\d{11,}$/.test(cleaned)) {
+      formattedPhone = `+${cleaned}`;
+    }
+    // Otherwise, try adding +1 for US numbers
+    else {
+      formattedPhone = `+1${cleaned}`;
+    }
+    
     sendCodeMutation.mutate(formattedPhone);
   };
   

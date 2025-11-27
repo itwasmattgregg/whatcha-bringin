@@ -73,8 +73,10 @@ https://whatcha-bringin.app/privacy
 
 For App Store reviewers to test the app without SMS verification:
 
-**Test Phone Number:** `+15551234567` (or as configured in `TEST_PHONE_NUMBER`)  
+**Test Phone Number:** `+15501234567` (or as configured in `TEST_PHONE_NUMBER`)  
 **Verification Code:** `123456` (or as configured in `TEST_VERIFICATION_CODE`)
+
+**Note:** We use `+1550` instead of `+1555` because iOS rejects 555 numbers as invalid.
 
 This test account bypasses Twilio SMS verification and works in production. The credentials are configured via environment variables in the API backend.
 

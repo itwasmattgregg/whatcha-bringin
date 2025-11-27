@@ -44,7 +44,8 @@ GITHUB_REPO_NAME=whatcha-bringin
 
 # Test Account (for app store reviewers - bypasses Twilio)
 # Set these to allow reviewers to test the app without SMS verification
-TEST_PHONE_NUMBER=+15551234567
+# Note: Using +1550 instead of +1555 because iOS rejects 555 numbers as invalid
+TEST_PHONE_NUMBER=+15501234567
 TEST_VERIFICATION_CODE=123456
 ```
 

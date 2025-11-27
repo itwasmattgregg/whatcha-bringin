@@ -46,8 +46,9 @@ export default async function handler(
       testPhoneNumber &&
       normalizedPhone === normalizePhoneNumber(testPhoneNumber);
 
-    // Development mode: Skip sending SMS for test phone numbers (numbers starting with +1555)
-    const isDevTestNumber = normalizedPhone.startsWith('+1555');
+    // Development mode: Skip sending SMS for test phone numbers (numbers starting with +1550)
+    // Using +1550 instead of +1555 because iOS rejects 555 numbers as invalid
+    const isDevTestNumber = normalizedPhone.startsWith('+1550');
     const isDevelopment = process.env.NODE_ENV === 'development';
 
     if (isTestAccount) {

@@ -28,8 +28,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const isTestAccount = testPhoneNumber && normalizedPhone === normalizePhoneNumber(testPhoneNumber);
     const isTestCodeMatch = code === testCode;
     
-    // Development mode: Allow test code "123456" for test phone numbers (numbers starting with +1555)
-    const isDevTestNumber = normalizedPhone.startsWith('+1555');
+    // Development mode: Allow test code "123456" for test phone numbers (numbers starting with +1550)
+    // Using +1550 instead of +1555 because iOS rejects 555 numbers as invalid
+    const isDevTestNumber = normalizedPhone.startsWith('+1550');
     const isDevelopment = process.env.NODE_ENV === 'development';
     const isDevTestCode = code === '123456';
     
