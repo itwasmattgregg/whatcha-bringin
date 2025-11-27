@@ -5,7 +5,7 @@ import { uploadImage } from '../../../lib/cloudinary';
 import type { Gathering } from '../../../models/Gathering';
 import { GatheringCollection } from '../../../models/Gathering';
 import { InviteCollection } from '../../../models/Invite';
-import { Filter, ObjectId, WithId } from 'mongodb';
+import { Document, Filter, ObjectId, WithId } from 'mongodb';
 import { z } from 'zod';
 
 // Configure body parser for larger payloads (images)
@@ -100,37 +100,39 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       });
 
       if (range === 'past') {
-        const pastOrFilters: Filter<Gathering>[] = [{ hostId: userObjectId }];
+        const pastOrFilters: Filter<WithId<Gathering>>[] = [
+          { hostId: userObjectId },
+        ];
         if (joinedGatheringIds.length) {
           pastOrFilters.push({ _id: { $in: joinedGatheringIds } });
         }
 
-        const pastGatherings = await gatheringsCollection
+        const pastGatherings = (await gatheringsCollection
           .find({
             deletedAt: { $exists: false },
             date: { $lt: todayIso },
-            $or: pastOrFilters,
+            $or: pastOrFilters as Filter<Document>[],
           })
           .sort({ date: -1, time: -1 })
-          .toArray();
+          .toArray()) as WithId<Gathering>[];
 
         return res.status(200).json({
           past: pastGatherings.map(serializeGathering),
         });
       }
 
-      const createdGatherings = await gatheringsCollection
+      const createdGatherings = (await gatheringsCollection
         .find({
           deletedAt: { $exists: false },
           hostId: userObjectId,
           date: { $gte: todayIso },
         })
         .sort({ date: 1, time: 1 })
-        .toArray();
+        .toArray()) as WithId<Gathering>[];
 
       const joinedGatherings =
         joinedGatheringIds.length > 0
-          ? await gatheringsCollection
+          ? ((await gatheringsCollection
               .find({
                 deletedAt: { $exists: false },
                 _id: { $in: joinedGatheringIds },
@@ -138,7 +140,7 @@ async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
                 date: { $gte: todayIso },
               })
               .sort({ date: 1, time: 1 })
-              .toArray()
+              .toArray()) as WithId<Gathering>[])
           : [];
 
       return res.status(200).json({
