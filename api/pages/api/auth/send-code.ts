@@ -42,14 +42,28 @@ export default async function handler(
 
     // Production test account (for app store reviewers)
     const testPhoneNumber = process.env.TEST_PHONE_NUMBER;
+    const normalizedTestPhone = testPhoneNumber
+      ? normalizePhoneNumber(testPhoneNumber)
+      : null;
     const isTestAccount =
-      testPhoneNumber &&
-      normalizedPhone === normalizePhoneNumber(testPhoneNumber);
+      normalizedTestPhone && normalizedPhone === normalizedTestPhone;
 
-    // Development mode: Skip sending SMS for test phone numbers (numbers starting with +1550)
+    // Skip sending SMS for test phone numbers (numbers starting with +1550)
     // Using +1550 instead of +1555 because iOS rejects 555 numbers as invalid
+    // This works in both development and production
     const isDevTestNumber = normalizedPhone.startsWith('+1550');
     const isDevelopment = process.env.NODE_ENV === 'development';
+
+    // Debug logging
+    console.log('[AUTH DEBUG]', {
+      incomingPhone: phoneNumber,
+      normalizedPhone,
+      testPhoneNumber,
+      normalizedTestPhone,
+      isTestAccount,
+      isDevTestNumber,
+      isDevelopment,
+    });
 
     if (isTestAccount) {
       console.log(
@@ -62,13 +76,14 @@ export default async function handler(
       });
     }
 
-    if (isDevelopment && isDevTestNumber) {
+    if (isDevTestNumber) {
+      const mode = isDevelopment ? 'DEV MODE' : 'PRODUCTION';
       console.log(
-        `[DEV MODE] Skipping SMS for test number ${normalizedPhone}. Use code "123456" to verify.`
+        `[${mode}] Skipping SMS for test number ${normalizedPhone}. Use code "123456" to verify.`
       );
       return res.status(200).json({
         success: true,
-        message: 'Verification code sent (dev mode - use code 123456)',
+        message: 'Verification code sent (test number - use code 123456)',
         devMode: true,
       });
     }
