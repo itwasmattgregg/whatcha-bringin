@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
+import { authService } from '../services/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -8,6 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   setAuth: (user: User, token: string) => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -77,6 +79,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
   };
   
+  const deleteAccount = async () => {
+    try {
+      await authService.deleteAccount();
+      // Clear local storage after successful deletion
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('user');
+      setUser(null);
+      setToken(null);
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  };
+  
   // Ensure all values are properly typed and serialized
   // Use useMemo to prevent unnecessary re-renders and ensure stable reference
   const contextValue: AuthContextType = React.useMemo(() => ({
@@ -85,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: isLoading === true, // Explicit boolean conversion
     setAuth,
     logout,
+    deleteAccount,
   }), [user, token, isLoading]);
 
   return (

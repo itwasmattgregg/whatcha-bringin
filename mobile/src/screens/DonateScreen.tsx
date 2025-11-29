@@ -23,7 +23,7 @@ const RECAPTCHA_SITE_KEY = process.env.EXPO_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
 export default function DonateScreen() {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { logout, deleteAccount } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [type, setType] = useState<
@@ -80,6 +80,37 @@ export default function DonateScreen() {
         },
       },
     ]);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to delete your account? This will permanently delete your account and all potluck gatherings you have created. This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              // User will be automatically redirected to auth screen
+              // when user state becomes null
+            } catch (error: any) {
+              Alert.alert(
+                'Error',
+                error.response?.data?.error ||
+                  error.message ||
+                  'Failed to delete account. Please try again.'
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleRecaptchaVerify = (token: string) => {
@@ -344,6 +375,13 @@ export default function DonateScreen() {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Log Out</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteAccountButton}
+          onPress={handleDeleteAccount}
+        >
+          <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -498,6 +536,16 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: '#999',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  deleteAccountButton: {
+    marginTop: 20,
+    padding: 12,
+    alignItems: 'center',
+  },
+  deleteAccountButtonText: {
+    color: '#ff4444',
     fontSize: 14,
     fontWeight: '500',
   },
