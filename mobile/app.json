@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.itwasmattgregg.mobile",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Whatcha Bringin needs access to your photos to let you add cover images to your potluck gatherings. For example, you can select a photo of your backyard BBQ setup to use as the cover image for your gathering, making it easier for guests to recognize your event."
       }
     },
     "android": {
