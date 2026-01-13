@@ -6,7 +6,7 @@ import { UserCollection } from '../../../models/User';
 import { GatheringCollection } from '../../../models/Gathering';
 import { ItemCollection } from '../../../models/Item';
 import { InviteCollection } from '../../../models/Invite';
-import { handler } from './delete-account';
+import { handler } from '../../../pages/api/auth/delete-account';
 import type { NextApiResponse } from 'next';
 
 // Mock the withAuth middleware to directly call the handler
@@ -375,4 +375,3 @@ test('should complete deletion in reasonable time', async () => {
     // Should complete in less than 5 seconds even with test data
     assert.ok(duration < 5000, `Deletion took ${duration}ms, expected < 5000ms`);
 });
-

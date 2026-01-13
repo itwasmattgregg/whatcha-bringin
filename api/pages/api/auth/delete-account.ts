@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import { getDb } from '../../../lib/db';
 import { withAuth, AuthenticatedRequest } from '../../../lib/middleware';
 import { UserCollection } from '../../../models/User';
@@ -58,7 +58,7 @@ export async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       db.collection(InviteCollection).updateMany(
         { acceptedUserIds: userObjectId },
         {
-          $pull: { acceptedUserIds: userObjectId },
+          $pull: { acceptedUserIds: userObjectId } as any,
         }
       )
     );
@@ -79,7 +79,9 @@ export async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
       .deleteOne({ _id: userObjectId });
 
     if (deleteResult.deletedCount === 0) {
-      return res.status(404).json({ error: 'User not found or already deleted' });
+      return res
+        .status(404)
+        .json({ error: 'User not found or already deleted' });
     }
 
     const duration = Date.now() - startTime;
@@ -92,17 +94,17 @@ export async function handler(req: AuthenticatedRequest, res: NextApiResponse) {
   } catch (error: any) {
     const duration = Date.now() - startTime;
     console.error(`Error deleting account after ${duration}ms:`, error);
-    
+
     // Provide more specific error messages
     if (error.message?.includes('timeout') || error.code === 50) {
-      return res.status(504).json({ 
-        error: 'Request timeout - account deletion is taking too long. Please try again.' 
+      return res.status(504).json({
+        error:
+          'Request timeout - account deletion is taking too long. Please try again.',
       });
     }
-    
+
     return res.status(500).json({ error: 'Failed to delete account' });
   }
 }
 
 export default withAuth(handler);
-
