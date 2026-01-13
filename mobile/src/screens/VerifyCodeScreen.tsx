@@ -42,8 +42,46 @@ export default function VerifyCodeScreen() {
   });
   
   const handleCodeChange = (value: string, index: number) => {
-    if (value.length > 1) return;
+    // Handle paste: if value length > 1, it's a paste operation
+    if (value.length > 1) {
+      // Extract only digits from the pasted value
+      const digits = value.replace(/\D/g, '').slice(0, 6);
+      
+      if (digits.length === 0) return;
+      
+      // If pasting 6 digits into the first box, replace everything
+      // Otherwise, preserve existing digits before the paste position
+      const newCode = index === 0 && digits.length === 6 
+        ? ['', '', '', '', '', ''] 
+        : [...code];
+      
+      // Fill in the digits starting from the current index
+      for (let i = 0; i < digits.length && (index + i) < 6; i++) {
+        newCode[index + i] = digits[i];
+      }
+      
+      setCode(newCode);
+      
+      // Focus on the next empty input or the last input if all are filled
+      const nextEmptyIndex = newCode.findIndex((digit, idx) => idx >= index && digit === '');
+      const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : Math.min(index + digits.length, 5);
+      
+      // Auto-submit if all 6 digits are filled
+      if (newCode.every(digit => digit !== '') && newCode.join('').length === 6) {
+        setTimeout(() => {
+          verifyCodeMutation.mutate({ phone: phoneNumber, code: newCode.join('') });
+        }, 0);
+      } else {
+        // Focus the appropriate input after paste
+        setTimeout(() => {
+          inputRefs.current[focusIndex]?.focus();
+        }, 0);
+      }
+      
+      return;
+    }
     
+    // Handle single character input (normal typing)
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
@@ -98,7 +136,7 @@ export default function VerifyCodeScreen() {
               onChangeText={(value) => handleCodeChange(value, index)}
               onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
               keyboardType="number-pad"
-              maxLength={1}
+              maxLength={index === 0 ? 6 : 1}
               selectTextOnFocus
             />
           ))}

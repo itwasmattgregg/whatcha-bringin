@@ -33,5 +33,9 @@ export async function getDb(): Promise<Db> {
   return client.db(process.env.MONGODB_DB_NAME || 'whatcha-bringin');
 }
 
+export async function getClient(): Promise<MongoClient> {
+  return clientPromise;
+}
+
 export default clientPromise;
 
